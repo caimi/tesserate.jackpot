@@ -14,6 +14,10 @@ import com.tesserate.game.api.ui.GraphicsObjects;
 import com.tesserate.game.api.util.Util;
 
 public class Arena extends GraphicsObjects {
+	private static final int TOP = 80;
+	private static final int BOTTOM = 485;
+	private static final int LEFT = 209;
+	private static final int RIGHT = 765;
 	private static final long serialVersionUID = -9146228304753001488L;
 
 	private static Arena instance;
@@ -46,8 +50,16 @@ public class Arena extends GraphicsObjects {
 	public void update(long elapsedTime) {
 		synchronized (balls) {
 			Iterator<Ball> ball = balls.iterator();
-			while (ball.hasNext())
-				ball.next().update(elapsedTime);
+			while (ball.hasNext()){
+				Ball next = ball.next();
+				next.update(elapsedTime);
+				if((next.getPosicao().x > RIGHT) || (next.getPosicao().x < LEFT)){
+					next.getVelocidade().x = -next.getVelocidade().x;
+				}
+				if((next.getPosicao().y > BOTTOM) || (next.getPosicao().y < TOP)){
+					next.getVelocidade().y = -next.getVelocidade().y;
+				}
+			}
 		}
 	}
 	
@@ -61,18 +73,20 @@ public class Arena extends GraphicsObjects {
 					GameCore.pause();
 				}
 				if(e.getKeyCode() == KeyEvent.VK_A) {
-					Ball bw = new Ball("ball_"+(int)Math.round(Math.random()*17));
+					Ball bw = new Ball("ball_"+balls.size()%18);
 					balls.add(bw);
-					//bw.setX((int)Math.round(Math.random()*560) + 200);
-					//bw.setY((int)Math.round(Math.random()*400) + 80);
 					bw.setX(Util.rnd(210, 760));
 					bw.setY(Util.rnd(80, 480));
+					bw.setVelocidade(Util.rnd(-10, 10), Util.rnd(-10, 10));
 				}
 				if(e.getKeyCode() == KeyEvent.VK_I){
 					Arena.getInstance().setVisible(false);
 				}
 				if(e.getKeyCode() == KeyEvent.VK_V){
 					Arena.getInstance().setVisible(true);
+				}
+				if(e.getKeyCode() == KeyEvent.VK_R){
+					balls = Collections.synchronizedList(new ArrayList<Ball>());
 				}
 				if(e.getKeyCode() == KeyEvent.VK_RIGHT){
 					Arena.getInstance().setX(Arena.getInstance().getX()+10);
