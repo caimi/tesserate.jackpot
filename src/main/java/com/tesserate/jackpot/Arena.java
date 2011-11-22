@@ -85,7 +85,7 @@ public class Arena extends GraphicsObjects {
 				}
 			}
 			for(int i = 0; i<balls.size(); i++){
-				for(int j=0; j<balls.size(); j++){
+				for(int j=i; j<balls.size(); j++){
 					if(balls.get(i).isCollide(balls.get(j))){
 						this.collitionEffect(balls.get(i), balls.get(j));
 					}
@@ -97,13 +97,18 @@ public class Arena extends GraphicsObjects {
 	private void collitionEffect(Ball b1, Ball b2){
 		Vector2D direction = b2.getPosition().subtract(b1.getPosition());
 		direction = direction.normalize();
+		//2 corpos nao ocupam o mesmo lugar no espaco.
+		Vector2D positionB2 = b1.getPosition().add( direction.multiply(b1.getRaio()+b2.getRaio()));
+		b2.setPosition(positionB2);
+		
+		//conservacao de energia
 		double f1 = b1.getVelocity().dot(direction);
 		double f2 = b2.getVelocity().dot(direction);
 		
 		Vector2D velo = b1.getVelocity().subtract(direction.multiply(f1-f2));
 		b1.setVelocity(velo.getX(), velo.getY());
 
-		velo = b2.getVelocity().add(direction.multiply(f1-f2));
+		velo = b2.getVelocity().add(direction.multiply((f1-f2)));
 		b2.setVelocity(velo.getX(), velo.getY());
 	}
 	
@@ -120,7 +125,7 @@ public class Arena extends GraphicsObjects {
 					Ball bw = new Ball("ball_"+balls.size()%18);
 					balls.add(bw);
 					bw.setPosition(Util.rnd(210, 760),Util.rnd(80, 480));
-					bw.setVelocity(Util.rnd(-10, 10), Util.rnd(-10, 10));
+					bw.setVelocity(Util.rnd(-5, 5), Util.rnd(-5, 5));
 					ballSize.setMsg(balls.size()+"");
 				}
 				if(e.getKeyCode() == KeyEvent.VK_R){
