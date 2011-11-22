@@ -1,5 +1,7 @@
 package com.tesserate.jackpot;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -10,21 +12,34 @@ import java.util.List;
 
 import com.tesserate.game.api.GameCore;
 import com.tesserate.game.api.fs.ResourceManager;
+import com.tesserate.game.api.math.Vector2D;
+import com.tesserate.game.api.ui.GraphicText;
 import com.tesserate.game.api.ui.GraphicsObjects;
 import com.tesserate.game.api.util.Util;
 
 public class Arena extends GraphicsObjects {
-	private static final int TOP = 80;
-	private static final int BOTTOM = 485;
+	private static final int TOP = 79;
+	private static final int BOTTOM = 490;
 	private static final int LEFT = 209;
-	private static final int RIGHT = 765;
+	private static final int RIGHT = 771;
 	private static final long serialVersionUID = -9146228304753001488L;
 
 	private static Arena instance;
 	private List<Ball> balls = Collections.synchronizedList(new ArrayList<Ball>());
+	private GraphicText ballSize = new GraphicText();
 	
-	private Arena(){ super(); };
+	private Arena(){ 
+		super();
+		this.init();
+	};
 	
+	private void init() {
+		ballSize.setColor(Color.WHITE);
+		Font f = new Font("Impact", Font.PLAIN, 30);
+		ballSize.setFont(f);
+		ballSize.setPosition(240, 570);
+	}
+
 	public static Arena getInstance(){
 		if(instance == null){
 			instance = new Arena();
@@ -36,9 +51,10 @@ public class Arena extends GraphicsObjects {
 	public void render(Graphics2D g) {
 		super.paint(g);
 		
-		if(this.isVisivel()){
+		if(this.isVisible()){
 			g.drawImage(ResourceManager.getImageResource("lobby").getImage(), getX(), getY(), null);
 		}
+		ballSize.render(g);
 		
 		synchronized (balls) {
 			Iterator<Ball> ball = balls.iterator();
@@ -53,14 +69,42 @@ public class Arena extends GraphicsObjects {
 			while (ball.hasNext()){
 				Ball next = ball.next();
 				next.update(elapsedTime);
-				if((next.getPosicao().x > RIGHT) || (next.getPosicao().x < LEFT)){
-					next.getVelocidade().x = -next.getVelocidade().x;
+				if((next.getPosition().getX() > RIGHT) || (next.getPosition().getX() < LEFT)){
+					next.getVelocity().setX(-next.getVelocity().getX());
+					if(next.getPosition().getX() > RIGHT)
+						next.getPosition().setX(RIGHT);
+					if(next.getPosition().getX() < LEFT)
+						next.getPosition().setX(LEFT);
 				}
-				if((next.getPosicao().y > BOTTOM) || (next.getPosicao().y < TOP)){
-					next.getVelocidade().y = -next.getVelocidade().y;
+				if((next.getPosition().getY() > BOTTOM) || (next.getPosition().getY() < TOP)){
+					next.getVelocity().setY(-next.getVelocity().getY());
+					if(next.getPosition().getY() > BOTTOM)
+						next.getPosition().setY(BOTTOM);
+					if(next.getPosition().getY() < TOP)
+						next.getPosition().setY(TOP);
+				}
+			}
+			for(int i = 0; i<balls.size(); i++){
+				for(int j=0; j<balls.size(); j++){
+					if(balls.get(i).isCollide(balls.get(j))){
+						this.collitionEffect(balls.get(i), balls.get(j));
+					}
 				}
 			}
 		}
+	}
+	
+	private void collitionEffect(Ball b1, Ball b2){
+		Vector2D direction = b2.getPosition().subtract(b1.getPosition());
+		direction = direction.normalize();
+		double f1 = b1.getVelocity().dot(direction);
+		double f2 = b2.getVelocity().dot(direction);
+		
+		Vector2D velo = b1.getVelocity().subtract(direction.multiply(f1-f2));
+		b1.setVelocity(velo.getX(), velo.getY());
+
+		velo = b2.getVelocity().add(direction.multiply(f1-f2));
+		b2.setVelocity(velo.getX(), velo.getY());
 	}
 	
 	public KeyAdapter keyMapper(){
@@ -75,30 +119,25 @@ public class Arena extends GraphicsObjects {
 				if(e.getKeyCode() == KeyEvent.VK_A) {
 					Ball bw = new Ball("ball_"+balls.size()%18);
 					balls.add(bw);
-					bw.setX(Util.rnd(210, 760));
-					bw.setY(Util.rnd(80, 480));
-					bw.setVelocidade(Util.rnd(-10, 10), Util.rnd(-10, 10));
-				}
-				if(e.getKeyCode() == KeyEvent.VK_I){
-					Arena.getInstance().setVisible(false);
-				}
-				if(e.getKeyCode() == KeyEvent.VK_V){
-					Arena.getInstance().setVisible(true);
+					bw.setPosition(Util.rnd(210, 760),Util.rnd(80, 480));
+					bw.setVelocity(Util.rnd(-10, 10), Util.rnd(-10, 10));
+					ballSize.setMsg(balls.size()+"");
 				}
 				if(e.getKeyCode() == KeyEvent.VK_R){
 					balls = Collections.synchronizedList(new ArrayList<Ball>());
+					ballSize.setMsg(balls.size()+"");
 				}
 				if(e.getKeyCode() == KeyEvent.VK_RIGHT){
-					Arena.getInstance().setX(Arena.getInstance().getX()+10);
+					//eBall.getPosition().x = RIGHT;
 				}
 				if(e.getKeyCode() == KeyEvent.VK_LEFT){
-					Arena.getInstance().setX(Arena.getInstance().getX()-10);
+					//eBall.getPosition().x = LEFT;
 				}
 				if(e.getKeyCode() == KeyEvent.VK_UP){
-					Arena.getInstance().setY(Arena.getInstance().getY()-10);
+					//eBall.getPosition().y = TOP;
 				}
 				if(e.getKeyCode() == KeyEvent.VK_DOWN){
-					Arena.getInstance().setY(Arena.getInstance().getY()+10);
+					//eBall.getPosition().y = BOTTOM;
 				}
 			}
 		};
