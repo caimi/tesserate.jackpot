@@ -13,9 +13,9 @@ public class Ball extends GraphicsObjects {
 	private String resourceId;
 	private int RAIO = 10;
 	private Vector2D velocity = new Vector2D();
-	private GraphicText label = new GraphicText();
+	private GraphicText label = new GraphicText();	
+	private boolean killBall = false;
 	
-
 	public Ball(String resourceId) {
 		this.resourceId = resourceId;
 	}
@@ -61,6 +61,14 @@ public class Ball extends GraphicsObjects {
 			return false;
 		
 		return true;
+	}
+
+	public boolean isKillBall() {
+		return killBall;
+	}
+
+	public void setKillBall(boolean killBall) {
+		this.killBall = killBall;
 	}
 
 }

@@ -3,7 +3,10 @@ package com.tesserate.jackpot;
 import com.tesserate.game.api.ControllerDevice;
 import com.tesserate.game.api.GameCore;
 import com.tesserate.game.api.fs.ImageResource;
+import com.tesserate.game.api.fs.Resource;
 import com.tesserate.game.api.fs.ResourceManager;
+import com.tesserate.game.api.sound.SoundManager;
+import com.tesserate.game.api.ui.FullScreenDevice;
 import com.tesserate.game.api.ui.SceneGraph;
 
 public class Jackpot extends GameCore{
@@ -26,63 +29,66 @@ public class Jackpot extends GameCore{
 
 	@Override
 	public void loadResources() {
-		ImageResource image = new ImageResource("lobby", "images/jackpot.png");
+		ImageResource image = new ImageResource("lobby", String.format("images/jackpot_%dx%d.png", FullScreenDevice.getWidth(), FullScreenDevice.getHeight()));
 		ResourceManager.addResource(image);
 
 		//TODO usar enum para nomes das imagens
-		image = new ImageResource("ball_0", "images/b_branca.png");
+		image = new ImageResource("killball-a", "images/b_branca.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_1", "images/b_preta.png");
+		image = new ImageResource("killball-i", "images/b_preta.png");
 		ResourceManager.addResource(image);
 
-		image = new ImageResource("ball_2", "images/b_amarela_c.png");
+		image = new ImageResource("ball_0", "images/b_amarela_c.png");
 		ResourceManager.addResource(image);
 
-		image = new ImageResource("ball_3", "images/b_amarela_e.png");
+		image = new ImageResource("ball_1", "images/b_amarela_e.png");
 		ResourceManager.addResource(image);
 
-		image = new ImageResource("ball_4", "images/b_azul_c.png");
+		image = new ImageResource("ball_2", "images/b_azul_c.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_5", "images/b_azul_e.png");
+		image = new ImageResource("ball_3", "images/b_azul_e.png");
 		ResourceManager.addResource(image);
 
-		image = new ImageResource("ball_6", "images/b_azul.png");
+		image = new ImageResource("ball_4", "images/b_azul.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_7", "images/b_ciano_c.png");
+		image = new ImageResource("ball_5", "images/b_ciano_c.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_8", "images/b_ciano_e.png");
+		image = new ImageResource("ball_6", "images/b_ciano_e.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_9", "images/b_laranja.png");
+		image = new ImageResource("ball_7", "images/b_laranja.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_10", "images/b_marrom.png");
+		image = new ImageResource("ball_8", "images/b_marrom.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_11", "images/b_rosa_c.png");
+		image = new ImageResource("ball_9", "images/b_rosa_c.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_12", "images/b_rosa_e.png");
+		image = new ImageResource("ball_10", "images/b_rosa_e.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_13", "images/b_roxa.png");
+		image = new ImageResource("ball_11", "images/b_roxa.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_14", "images/b_verde_c.png");
+		image = new ImageResource("ball_12", "images/b_verde_c.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_15", "images/b_verde_e.png");
+		image = new ImageResource("ball_13", "images/b_verde_e.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_16", "images/b_vermelho_c.png");
+		image = new ImageResource("ball_14", "images/b_vermelho_c.png");
 		ResourceManager.addResource(image);
 		
-		image = new ImageResource("ball_17", "images/b_vermelho_e.png");
+		image = new ImageResource("ball_15", "images/b_vermelho_e.png");
 		ResourceManager.addResource(image);
+		
+		SoundManager soundManager = SoundManager.getInstance(); 
+		soundManager.getSound("launch", Resource.loadFile("killball.wav"));
 	}
 
 	public static void main(String[] args) {

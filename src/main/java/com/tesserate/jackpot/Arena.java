@@ -13,20 +13,23 @@ import java.util.List;
 import com.tesserate.game.api.GameCore;
 import com.tesserate.game.api.fs.ResourceManager;
 import com.tesserate.game.api.math.Vector2D;
+import com.tesserate.game.api.sound.SoundManager;
 import com.tesserate.game.api.ui.GraphicText;
 import com.tesserate.game.api.ui.GraphicsObjects;
 import com.tesserate.game.api.util.Util;
 
 public class Arena extends GraphicsObjects {
 	private static final int TOP = 79;
-	private static final int BOTTOM = 490;
 	private static final int LEFT = 209;
-	private static final int RIGHT = 771;
+	private static final int BOTTOM = 800 - 109;
+	private static final int RIGHT = 1280 - 29;
+	private int delay = 5000;
 	private static final long serialVersionUID = -9146228304753001488L;
-
+	private int killBall = 0;
 	private static Arena instance;
 	private List<Ball> balls = Collections.synchronizedList(new ArrayList<Ball>());
 	private GraphicText ballSize = new GraphicText();
+	private GraphicText killBallSize = new GraphicText();
 	
 	private Arena(){ 
 		super();
@@ -34,10 +37,13 @@ public class Arena extends GraphicsObjects {
 	};
 	
 	private void init() {
+		System.out.println(String.format("%d, %d, %d, %d", TOP, LEFT, BOTTOM, RIGHT));
 		ballSize.setColor(Color.WHITE);
 		Font f = new Font("Impact", Font.PLAIN, 30);
 		ballSize.setFont(f);
-		ballSize.setPosition(240, 570);
+		ballSize.setPosition(30, 800-40);
+		killBallSize.setFont(f);
+		killBallSize.setPosition(340, 800-40);
 	}
 
 	public static Arena getInstance(){
@@ -55,6 +61,8 @@ public class Arena extends GraphicsObjects {
 			g.drawImage(ResourceManager.getImageResource("lobby").getImage(), getX(), getY(), null);
 		}
 		ballSize.render(g);
+		killBallSize.setMsg(killBall+"");
+		killBallSize.render(g);
 		
 		synchronized (balls) {
 			Iterator<Ball> ball = balls.iterator();
@@ -64,6 +72,12 @@ public class Arena extends GraphicsObjects {
 	}
 
 	public void update(long elapsedTime) {
+		if(delay > 0)
+			delay -= elapsedTime;
+		else{
+			delay = 10000;
+			this.launchKillBall();
+		}
 		synchronized (balls) {
 			Iterator<Ball> ball = balls.iterator();
 			while (ball.hasNext()){
@@ -110,6 +124,26 @@ public class Arena extends GraphicsObjects {
 
 		velo = b2.getVelocity().add(direction.multiply((f1-f2)));
 		b2.setVelocity(velo.getX(), velo.getY());
+		
+		if( (b1.isKillBall() || b2.isKillBall()) ){
+			if(!b1.isKillBall())
+				balls.remove(b1);
+			if(!b2.isKillBall())
+				balls.remove(b2);
+			ballSize.setMsg(balls.size()-killBall +"");
+		}
+	}
+	
+	private void launchKillBall(){
+		SoundManager.getInstance().play("launch");
+		Ball bw = new Ball("killball-a");
+		//bw.setPosition(Util.rnd(LEFT, RIGHT),Util.rnd(TOP, BOTTOM));
+		//bw.setVelocity(Util.rnd(-7, 7), Util.rnd(-7, 7));
+		bw.setPosition(700, 400);
+		bw.setVelocity(Util.rnd(-7, 7),Util.rnd(-7, 7));
+		bw.setKillBall(true); 
+		balls.add(bw);
+		killBall++;
 	}
 	
 	public KeyAdapter keyMapper(){
@@ -122,16 +156,21 @@ public class Arena extends GraphicsObjects {
 					GameCore.pause();
 				}
 				if(e.getKeyCode() == KeyEvent.VK_A) {
-					Ball bw = new Ball("ball_"+balls.size()%18);
+					Ball bw = new Ball("ball_"+balls.size()%16);
 					balls.add(bw);
-					bw.setPosition(Util.rnd(210, 760),Util.rnd(80, 480));
-					bw.setVelocity(Util.rnd(-5, 5), Util.rnd(-5, 5));
+					bw.setPosition(Util.rnd(LEFT, RIGHT),Util.rnd(TOP, BOTTOM));
+					bw.setVelocity(Util.rnd(-7, 7), Util.rnd(-7, 7));
 					ballSize.setMsg(balls.size()+"");
 				}
 				if(e.getKeyCode() == KeyEvent.VK_R){
 					balls = Collections.synchronizedList(new ArrayList<Ball>());
+					killBall = 0;
 					ballSize.setMsg(balls.size()+"");
 				}
+				if(e.getKeyCode() == KeyEvent.VK_K){
+					launchKillBall();
+				}
+				
 				if(e.getKeyCode() == KeyEvent.VK_RIGHT){
 					//eBall.getPosition().x = RIGHT;
 				}
