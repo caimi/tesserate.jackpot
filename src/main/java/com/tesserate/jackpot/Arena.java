@@ -1,5 +1,7 @@
 package com.tesserate.jackpot;
 
+import static com.tesserate.game.api.sound.SoundManager.play;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -13,7 +15,6 @@ import java.util.List;
 import com.tesserate.game.api.GameCore;
 import com.tesserate.game.api.fs.ResourceManager;
 import com.tesserate.game.api.math.Vector2D;
-import com.tesserate.game.api.sound.SoundManager;
 import com.tesserate.game.api.ui.GraphicText;
 import com.tesserate.game.api.ui.GraphicsObjects;
 import com.tesserate.game.api.util.Util;
@@ -21,8 +22,11 @@ import com.tesserate.game.api.util.Util;
 public class Arena extends GraphicsObjects {
 	private static final int TOP = 79;
 	private static final int LEFT = 209;
-	private static final int BOTTOM = 800 - 109;
-	private static final int RIGHT = 1280 - 29;
+	private static final int H = 600;
+	private static final int W = 800;
+	private static final int BOTTOM = H - 109;
+	private static final int RIGHT = W - 29;
+	
 	private int delay = 5000;
 	private static final long serialVersionUID = -9146228304753001488L;
 	private int killBall = 0;
@@ -37,13 +41,12 @@ public class Arena extends GraphicsObjects {
 	};
 	
 	private void init() {
-		System.out.println(String.format("%d, %d, %d, %d", TOP, LEFT, BOTTOM, RIGHT));
 		ballSize.setColor(Color.WHITE);
 		Font f = new Font("Impact", Font.PLAIN, 30);
 		ballSize.setFont(f);
-		ballSize.setPosition(30, 800-40);
+		ballSize.setPosition(30, H-40);
 		killBallSize.setFont(f);
-		killBallSize.setPosition(340, 800-40);
+		killBallSize.setPosition(270, H-40);
 	}
 
 	public static Arena getInstance(){
@@ -126,20 +129,24 @@ public class Arena extends GraphicsObjects {
 		b2.setVelocity(velo.getX(), velo.getY());
 		
 		if( (b1.isKillBall() || b2.isKillBall()) ){
-			if(!b1.isKillBall())
+			if(!b1.isKillBall()){
 				balls.remove(b1);
-			if(!b2.isKillBall())
+				play("kill");
+			}
+			if(!b2.isKillBall()){
 				balls.remove(b2);
+				play("kill");
+			}
 			ballSize.setMsg(balls.size()-killBall +"");
 		}
 	}
 	
 	private void launchKillBall(){
-		SoundManager.getInstance().play("launch");
+		play("go");
 		Ball bw = new Ball("killball-a");
 		//bw.setPosition(Util.rnd(LEFT, RIGHT),Util.rnd(TOP, BOTTOM));
 		//bw.setVelocity(Util.rnd(-7, 7), Util.rnd(-7, 7));
-		bw.setPosition(700, 400);
+		bw.setPosition((RIGHT-LEFT)/2+LEFT, (BOTTOM-TOP)/2+TOP);
 		bw.setVelocity(Util.rnd(-7, 7),Util.rnd(-7, 7));
 		bw.setKillBall(true); 
 		balls.add(bw);
