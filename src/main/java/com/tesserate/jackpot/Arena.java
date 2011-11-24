@@ -17,23 +17,32 @@ import com.tesserate.game.api.fs.ResourceManager;
 import com.tesserate.game.api.math.Vector2D;
 import com.tesserate.game.api.ui.GraphicText;
 import com.tesserate.game.api.ui.GraphicsObjects;
+import com.tesserate.game.api.ui.SceneGraph;
 import com.tesserate.game.api.util.Util;
 
 public class Arena extends GraphicsObjects {
+	private static final long serialVersionUID = -9146228304753001488L;
+
 	private static final int TOP = 79;
 	private static final int LEFT = 209;
-	private static final int H = 600;
-	private static final int W = 800;
+	private static final int H = 1024;
+	private static final int W = 1280;
 	private static final int BOTTOM = H - 109;
 	private static final int RIGHT = W - 29;
 	
-	private int delay = 5000;
-	private static final long serialVersionUID = -9146228304753001488L;
-	private int killBall = 0;
 	private static Arena instance;
+
+//	private int delay = 5000;
+//	private int countdown = 5;
+//	private long countTime = 0;
+//	private int killBall = 0;
+	
 	private List<Ball> balls = Collections.synchronizedList(new ArrayList<Ball>());
-	private GraphicText ballSize = new GraphicText();
-	private GraphicText killBallSize = new GraphicText();
+	private GraphicText players = new GraphicText();
+	private GraphicText remaining = new GraphicText();
+	private GraphicText cueBall = new GraphicText();
+	private GraphicText nextBall = new GraphicText();
+	private GraphicText prizes = new GraphicText();
 	
 	private Arena(){ 
 		super();
@@ -41,12 +50,23 @@ public class Arena extends GraphicsObjects {
 	};
 	
 	private void init() {
-		ballSize.setColor(Color.WHITE);
+		players.setColor(Color.WHITE);
 		Font f = new Font("Impact", Font.PLAIN, 30);
-		ballSize.setFont(f);
-		ballSize.setPosition(30, H-40);
-		killBallSize.setFont(f);
-		killBallSize.setPosition(270, H-40);
+		players.setFont(f);
+		players.setPosition(30, H-30);
+		players.setMsg(StructJackpot.getPlayers());
+		remaining.setFont(f);
+		remaining.setPosition(130, H-30);
+		remaining.setMsg(StructJackpot.remaining);
+		nextBall.setMsg("5 s");
+		nextBall.setFont(f);
+		nextBall.setPosition(230, H-30);
+		cueBall.setFont(f);
+		cueBall.setPosition(340, H-30);
+		prizes.setMsg("0");
+		prizes.setFont(f);
+		prizes.setPosition(440, H-30);
+		prizes.setMsg(StructJackpot.getPrizes());
 	}
 
 	public static Arena getInstance(){
@@ -63,9 +83,13 @@ public class Arena extends GraphicsObjects {
 		if(this.isVisible()){
 			g.drawImage(ResourceManager.getImageResource("lobby").getImage(), getX(), getY(), null);
 		}
-		ballSize.render(g);
-		killBallSize.setMsg(killBall+"");
-		killBallSize.render(g);
+		
+		this.updateTextValues();
+		players.render(g);
+		remaining.render(g);
+		nextBall.render(g);
+		cueBall.render(g);
+		prizes.render(g);
 		
 		synchronized (balls) {
 			Iterator<Ball> ball = balls.iterator();
@@ -75,12 +99,21 @@ public class Arena extends GraphicsObjects {
 	}
 
 	public void update(long elapsedTime) {
-		if(delay > 0)
-			delay -= elapsedTime;
+		/*refatorar */
+		if(StructJackpot.delay > 0)
+			StructJackpot.delay -= elapsedTime;
 		else{
-			delay = 10000;
+			StructJackpot.delay += 10000;
+			StructJackpot.nextBall = 10;
 			this.launchKillBall();
 		}
+		StructJackpot.countdown += elapsedTime;
+		if(StructJackpot.countdown > 1000){
+			StructJackpot.countdown -= 1000; 
+			--StructJackpot.nextBall;
+			//nextBall.setMsg(String.format("%d s", --StructJackpot.nextBall));
+		}
+		/* */
 		synchronized (balls) {
 			Iterator<Ball> ball = balls.iterator();
 			while (ball.hasNext()){
@@ -108,6 +141,9 @@ public class Arena extends GraphicsObjects {
 					}
 				}
 			}
+			if(StructJackpot.players >0 && StructJackpot.prizes == StructJackpot.remaining){
+				GameCore.setPaused(true);
+			}
 		}
 	}
 	
@@ -132,12 +168,13 @@ public class Arena extends GraphicsObjects {
 			if(!b1.isKillBall()){
 				balls.remove(b1);
 				play("kill");
+				--StructJackpot.remaining;
 			}
 			if(!b2.isKillBall()){
 				balls.remove(b2);
 				play("kill");
+				--StructJackpot.remaining;
 			}
-			ballSize.setMsg(balls.size()-killBall +"");
 		}
 	}
 	
@@ -150,7 +187,15 @@ public class Arena extends GraphicsObjects {
 		bw.setVelocity(Util.rnd(-7, 7),Util.rnd(-7, 7));
 		bw.setKillBall(true); 
 		balls.add(bw);
-		killBall++;
+		StructJackpot.cueBall++;
+	}
+	
+	private void updateTextValues() {
+		players.setMsg(StructJackpot.players);
+		remaining.setMsg(StructJackpot.remaining);
+		nextBall.setMsg(StructJackpot.nextBall);
+		cueBall.setMsg(StructJackpot.cueBall);
+		prizes.setMsg(StructJackpot.prizes);	
 	}
 	
 	public KeyAdapter keyMapper(){
@@ -167,19 +212,29 @@ public class Arena extends GraphicsObjects {
 					balls.add(bw);
 					bw.setPosition(Util.rnd(LEFT, RIGHT),Util.rnd(TOP, BOTTOM));
 					bw.setVelocity(Util.rnd(-7, 7), Util.rnd(-7, 7));
-					ballSize.setMsg(balls.size()+"");
+					
+					++StructJackpot.players;
+					++StructJackpot.remaining;
 				}
 				if(e.getKeyCode() == KeyEvent.VK_R){
 					balls = Collections.synchronizedList(new ArrayList<Ball>());
-					killBall = 0;
-					ballSize.setMsg(balls.size()+"");
+					StructJackpot.reset();
+					GameCore.setPaused(true);
 				}
 				if(e.getKeyCode() == KeyEvent.VK_K){
-					launchKillBall();
+					if(!GameCore.isPaused())
+						launchKillBall();
+				}
+				if(e.getKeyCode() == KeyEvent.VK_S){
+					StructJackpot.prizes++;
+				}
+				if(e.getKeyCode() == KeyEvent.VK_X){
+					StructJackpot.prizes--;
 				}
 				
 				if(e.getKeyCode() == KeyEvent.VK_RIGHT){
 					//eBall.getPosition().x = RIGHT;
+					SceneGraph.getInstance().add( new GraphicText("aqui", 20, TOP+20) );
 				}
 				if(e.getKeyCode() == KeyEvent.VK_LEFT){
 					//eBall.getPosition().x = LEFT;
