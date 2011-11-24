@@ -38,7 +38,7 @@ public class Jackpot extends GameCore{
 		soundManager.getSound("go", Resource.loadFile("go.wav"));
 		soundManager.getSound("time", Resource.loadFile("time.wav"));
 		soundManager.getSound("hit", Resource.loadFile("hit.wav"));
-		soundManager.getSound("kill", Resource.loadFile("kill.wav"));
+		soundManager.getSound("kill", Resource.loadFile("kill2.wav"));
 	}
 
 	private void loadImageResources() {
