@@ -48,7 +48,13 @@ public class Jackpot extends GameCore{
 	}
 
 	private void addBackgroundResource() {
-		final ImageResource image = new ImageResource("lobby", String.format("images/jackpot_%dx%d.png", FullScreenDevice.getWidth(), FullScreenDevice.getHeight()));
+		ImageResource image;
+		final String backgroundImageName = String.format("images/jackpot_%dx%d.png", FullScreenDevice.getWidth(), FullScreenDevice.getHeight());
+		try{
+			image = new ImageResource("lobby", backgroundImageName);
+		}catch (final IllegalArgumentException e) {
+			throw new RuntimeException("Image not available: "+backgroundImageName,e);
+		}
 		ResourceManager.addResource(image);
 	}
 
