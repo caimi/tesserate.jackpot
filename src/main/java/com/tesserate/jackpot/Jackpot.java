@@ -23,81 +23,75 @@ public class Jackpot extends GameCore{
 	}
 
 	@Override
-	public void update(long elapsedTime) {
+	public void update(final long elapsedTime) {
 		arena.update(elapsedTime);
 	}
 
 	@Override
 	public void loadResources() {
-		ImageResource image = new ImageResource("lobby", String.format("images/jackpot_%dx%d.png", FullScreenDevice.getWidth(), FullScreenDevice.getHeight()));
-		ResourceManager.addResource(image);
+		loadImageResources();
+		loadAudioResources();
+	}
 
-		//TODO usar enum para nomes das imagens
-		image = new ImageResource("killball-a", "images/b_branca.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("killball-i", "images/b_preta.png");
-		ResourceManager.addResource(image);
-
-		image = new ImageResource("ball_0", "images/b_amarela_c.png");
-		ResourceManager.addResource(image);
-
-		image = new ImageResource("ball_1", "images/b_amarela_e.png");
-		ResourceManager.addResource(image);
-
-		image = new ImageResource("ball_2", "images/b_azul_c.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_3", "images/b_azul_e.png");
-		ResourceManager.addResource(image);
-
-		image = new ImageResource("ball_4", "images/b_azul.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_5", "images/b_ciano_c.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_6", "images/b_ciano_e.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_7", "images/b_laranja.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_8", "images/b_marrom.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_9", "images/b_rosa_c.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_10", "images/b_rosa_e.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_11", "images/b_roxa.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_12", "images/b_verde_c.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_13", "images/b_verde_e.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_14", "images/b_vermelho_c.png");
-		ResourceManager.addResource(image);
-		
-		image = new ImageResource("ball_15", "images/b_vermelho_e.png");
-		ResourceManager.addResource(image);
-		
-		SoundManager soundManager = SoundManager.getInstance(); 
+	private void loadAudioResources() {
+		final SoundManager soundManager = SoundManager.getInstance(); 
 		soundManager.getSound("go", Resource.loadFile("go.wav"));
 		soundManager.getSound("time", Resource.loadFile("time.wav"));
 		soundManager.getSound("hit", Resource.loadFile("hit.wav"));
-		soundManager.getSound("kill", Resource.loadFile("kill2.wav"));
+		soundManager.getSound("kill", Resource.loadFile("kill.wav"));
 	}
 
-	public static void main(String[] args) {
+	private void loadImageResources() {
+		addBackgroundResource();
+		addMainBallsResource();
+		addColoredBallsResource();
+	}
+
+	private void addBackgroundResource() {
+		ImageResource image;
+		final String backgroundImageName = String.format("images/jackpot_%dx%d.png", FullScreenDevice.getWidth(), FullScreenDevice.getHeight());
+		try{
+			image = new ImageResource("lobby", backgroundImageName);
+		}catch (final IllegalArgumentException e) {
+			throw new RuntimeException("Image not available: "+backgroundImageName,e);
+		}
+		ResourceManager.addResource(image);
+	}
+
+	private void addMainBallsResource() {
+		addResource("killball-a", "b_branca.png");
+		addResource("killball-i", "b_preta.png");
+	}
+
+	private void addColoredBallsResource() {
+		addResource("ball_0", "b_amarela_c.png");
+		addResource("ball_1", "b_amarela_e.png");
+		addResource("ball_2", "b_azul_c.png");
+		addResource("ball_3", "b_azul_e.png");
+		addResource("ball_4", "b_azul.png");
+		addResource("ball_5", "b_ciano_c.png");
+		addResource("ball_6", "b_ciano_e.png");
+		addResource("ball_7", "b_laranja.png");		
+		addResource("ball_8", "b_marrom.png");
+		addResource("ball_9", "b_rosa_c.png");		
+		addResource("ball_10", "b_rosa_e.png");
+		addResource("ball_11", "b_roxa.png");		
+		addResource("ball_12", "b_verde_c.png");
+		addResource("ball_13", "b_verde_e.png");		
+		addResource("ball_14", "b_vermelho_c.png");
+		addResource("ball_15", "b_vermelho_e.png");
+	}
+
+	private void addResource(final String resourceId, final String resourceFile) {
+		ImageResource image;
+		image = new ImageResource(resourceId, "images/"+resourceFile);
+		ResourceManager.addResource(image);
+	}
+
+	public static void main(final String[] args) {
 		try{
 			new Jackpot();
-		}catch (Exception e) {
+		}catch (final Exception e) {
 			e.printStackTrace();
 			System.exit(0);
 		}
