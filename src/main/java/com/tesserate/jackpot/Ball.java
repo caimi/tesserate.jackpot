@@ -22,8 +22,9 @@ public class Ball extends GraphicsObjects {
 	public Ball(String resourceId) {
 		this.resourceId = resourceId;
 		label.setVisible(false);
-		label.setFont(new Font("helvetica", Font.BOLD, 12));
-		label.setColor(Color.DARK_GRAY);
+		label.setFont(new Font("Arial", Font.PLAIN, 10));
+		label.setColor(new Color(138,144,149));
+		label.setAlignment(CENTER_ALIGNMENT);
 	}
 	
 	@Override
@@ -31,9 +32,22 @@ public class Ball extends GraphicsObjects {
 		super.paint(g);
 		g.drawImage(ResourceManager.getImageResource(resourceId).getImage(), this.getLocation().x-RAIO, this.getLocation().y-RAIO, null);
 		//g.drawOval( this.getLocation().x-RAIO, this.getLocation().y-RAIO, 2*RAIO,2*RAIO);
-		label.setPosition(this.getLocation().x, this.getLocation().y-10);
+		label.setPosition(this.getLocation().x, this.getLocation().y-13);
 		label.setMsg(msgLabel);
 		label.render(g);
+	}
+
+	private String removeLowerCase(String msg) {
+		String upperCase = "ABCDEFGHIJKLMNOPKRSTUVXWYZ";
+		String result = "";
+		
+		for (int i = 0; i < msg.length(); i++)
+			for (int j = 0; j < upperCase.length(); j++){
+				if(msg.charAt(i)==upperCase.charAt(j)){
+					result += msg.charAt(i);
+				}
+			}
+		return result;
 	}
 
 	public int getRaio() {
