@@ -25,31 +25,34 @@ public class Arena extends GraphicsObjects {
 
 	private static final int TOP = 79;
 	private static final int LEFT = 209;
-	private static final int H = 1024;
-	private static final int W = 1280;
-	private static final int BOTTOM = H - 109;
-	private static final int RIGHT = W - 29;
+	private int H;
+	private int W;
+	private int BOTTOM;
+	private int RIGHT;
 	
 	private static Arena instance;
 
-//	private int delay = 5000;
-//	private int countdown = 5;
-//	private long countTime = 0;
-//	private int killBall = 0;
+	private static List<Color> colors = new ArrayList<Color>();
+	//private List<Ball> balls = Collections.synchronizedList(new ArrayList<Ball>());
+	private List<Player> listPlayer = Collections.synchronizedList(new ArrayList<Player>());
 	
-	private List<Ball> balls = Collections.synchronizedList(new ArrayList<Ball>());
 	private GraphicText players = new GraphicText();
 	private GraphicText remaining = new GraphicText();
 	private GraphicText cueBall = new GraphicText();
 	private GraphicText nextBall = new GraphicText();
 	private GraphicText prizes = new GraphicText();
 	
+	private GraphicText screem;
+
+	private boolean showBallLabels = false;
+	
 	private Arena(){ 
 		super();
-		this.init();
 	};
 	
-	private void init() {
+	public void init() {
+		BOTTOM = H - 109;
+		RIGHT = W - 29;
 		players.setColor(Color.WHITE);
 		Font f = new Font("Impact", Font.PLAIN, 30);
 		players.setFont(f);
@@ -67,6 +70,28 @@ public class Arena extends GraphicsObjects {
 		prizes.setFont(f);
 		prizes.setPosition(440, H-30);
 		prizes.setMsg(StructJackpot.getPrizes());
+		screem = new GraphicText(String.format("Resolução %d x %d", W, H), RIGHT-200, HEIGHT - 20 );
+		screem.setColor(Color.DARK_GRAY);
+		initColors();
+	}
+
+	private void initColors() {
+		colors.add(new Color(225,208,26));
+		colors.add(new Color(255,201,25));
+		colors.add(new Color(151,210,243));
+		colors.add(new Color(27,32,201));
+		colors.add(new Color(31,125,247));
+		colors.add(new Color(44,205,205));
+		colors.add(new Color(47,167,155));
+		colors.add(new Color(242,160,30));
+		colors.add(new Color(110,72,33));
+		colors.add(new Color(229,196,223));
+		colors.add(new Color(228,33,218));
+		colors.add(new Color(140,122,196));
+		colors.add(new Color(27,223,50));
+		colors.add(new Color(33,131,22));
+		colors.add(new Color(226,72,72));
+		colors.add(new Color(140,27,27));
 	}
 
 	public static Arena getInstance(){
@@ -90,12 +115,37 @@ public class Arena extends GraphicsObjects {
 		nextBall.render(g);
 		cueBall.render(g);
 		prizes.render(g);
+		screem.render(g);
 		
-		synchronized (balls) {
-			Iterator<Ball> ball = balls.iterator();
-			while (ball.hasNext())
-				ball.next().render(g);
+		if(listPlayer.size() > 0 ){
+			renderPlayer(g);
+		}else{			
+			renderBalls(g);
 		}
+	}
+
+	private void renderPlayer(Graphics2D g) {
+		int heightLine = 5;
+		for (int i=0; i<listPlayer.size(); i++) {
+			Player player = listPlayer.get(i);
+			player.ball.render(g);
+			
+			if( ((TOP + heightLine) < BOTTOM) && !player.isKiller() ){
+				g.setColor(player.getColor());
+				g.fillOval(25, TOP-10+heightLine, 10, 10);
+				player.name.setPosition(40, TOP+heightLine);
+				player.name.render(g);
+				heightLine += 15;
+			}
+		}
+	}
+
+	private void renderBalls(Graphics2D g) {
+//		synchronized (balls) {
+//			Iterator<Ball> ball = balls.iterator();
+//			while (ball.hasNext())
+//				ball.next().render(g);
+//		}
 	}
 
 	public void update(long elapsedTime) {
@@ -114,10 +164,11 @@ public class Arena extends GraphicsObjects {
 			//nextBall.setMsg(String.format("%d s", --StructJackpot.nextBall));
 		}
 		/* */
-		synchronized (balls) {
-			Iterator<Ball> ball = balls.iterator();
-			while (ball.hasNext()){
-				Ball next = ball.next();
+		synchronized (listPlayer) {
+			Iterator<Player> playerIterator = listPlayer.iterator();
+			while (playerIterator.hasNext()){
+				Player player = playerIterator.next();
+				Ball next = player.ball;
 				next.update(elapsedTime);
 				if((next.getPosition().getX() > RIGHT) || (next.getPosition().getX() < LEFT)){
 					next.getVelocity().setX(-next.getVelocity().getX());
@@ -134,20 +185,25 @@ public class Arena extends GraphicsObjects {
 						next.getPosition().setY(TOP);
 				}
 			}
-			for(int i = 0; i<balls.size(); i++){
-				for(int j=i; j<balls.size(); j++){
-					if(balls.get(i).isCollide(balls.get(j))){
-						this.collitionEffect(balls.get(i), balls.get(j));
+			for(int i = 0; i<listPlayer.size(); i++){
+				for(int j=i; j<listPlayer.size(); j++){
+					if(listPlayer.get(i).ball.isCollide(listPlayer.get(j).ball)){
+						this.collitionEffect(listPlayer.get(i), listPlayer.get(j));
 					}
 				}
 			}
 			if(StructJackpot.players >0 && StructJackpot.prizes == StructJackpot.remaining){
+				showBallLabels = true;
+				showLabel(showBallLabels);
 				GameCore.setPaused(true);
 			}
 		}
 	}
 	
-	private void collitionEffect(Ball b1, Ball b2){
+	private void collitionEffect(Player p1, Player p2){
+		Ball b1 = p1.ball;
+		Ball b2 = p2.ball;
+		
 		Vector2D direction = b2.getPosition().subtract(b1.getPosition());
 		direction = direction.normalize();
 		//2 corpos nao ocupam o mesmo lugar no espaco.
@@ -166,12 +222,12 @@ public class Arena extends GraphicsObjects {
 		
 		if( (b1.isKillBall() || b2.isKillBall()) ){
 			if(!b1.isKillBall()){
-				balls.remove(b1);
+				listPlayer.remove(p1);
 				play("kill");
 				--StructJackpot.remaining;
 			}
 			if(!b2.isKillBall()){
-				balls.remove(b2);
+				listPlayer.remove(p2);
 				play("kill");
 				--StructJackpot.remaining;
 			}
@@ -185,8 +241,9 @@ public class Arena extends GraphicsObjects {
 		//bw.setVelocity(Util.rnd(-7, 7), Util.rnd(-7, 7));
 		bw.setPosition((RIGHT-LEFT)/2+LEFT, (BOTTOM-TOP)/2+TOP);
 		bw.setVelocity(Util.rnd(-7, 7),Util.rnd(-7, 7));
-		bw.setKillBall(true); 
-		balls.add(bw);
+		bw.setKillBall(true);
+		
+		listPlayer.add(new Player(Player.KILLER, bw, Color.WHITE));
 		StructJackpot.cueBall++;
 	}
 	
@@ -207,17 +264,30 @@ public class Arena extends GraphicsObjects {
 				if(e.getKeyCode() == KeyEvent.VK_P || e.getKeyCode() == KeyEvent.VK_SPACE) {
 					GameCore.pause();
 				}
-				if(e.getKeyCode() == KeyEvent.VK_A) {
-					Ball bw = new Ball("ball_"+balls.size()%16);
-					balls.add(bw);
-					bw.setPosition(Util.rnd(LEFT, RIGHT),Util.rnd(TOP, BOTTOM));
-					bw.setVelocity(Util.rnd(-7, 7), Util.rnd(-7, 7));
-					
-					++StructJackpot.players;
-					++StructJackpot.remaining;
+				if(e.getKeyCode() == KeyEvent.VK_J || e.getKeyCode() == KeyEvent.VK_A) {
+					//if(ResourceManager.getTextFiles("players").size() > StructJackpot.players){
+						List<String> names = ResourceManager.getTextFiles("players");
+						String name = names.get(StructJackpot.players%names.size());
+						
+						Ball bw = new Ball("ball_"+StructJackpot.players%16);
+						bw.setPosition(Util.rnd(LEFT, RIGHT),Util.rnd(TOP, BOTTOM));
+						bw.setVelocity(Util.rnd(-7, 7), Util.rnd(-7, 7));
+						bw.setLabel(name);
+						Player player = new Player(name, bw, colors.get(listPlayer.size()%16));
+						
+						listPlayer.add(player);
+						++StructJackpot.players;
+						++StructJackpot.remaining;
+					//}
 				}
+				
+				if(e.getKeyCode() == KeyEvent.VK_L){
+					showBallLabels = !showBallLabels;
+					showLabel( showBallLabels);
+				}
+				
 				if(e.getKeyCode() == KeyEvent.VK_R){
-					balls = Collections.synchronizedList(new ArrayList<Ball>());
+					listPlayer = Collections.synchronizedList(new ArrayList<Player>());
 					StructJackpot.reset();
 					GameCore.setPaused(true);
 				}
@@ -248,4 +318,20 @@ public class Arena extends GraphicsObjects {
 			}
 		};
 	}
+
+	private void showLabel(boolean show) {
+		Iterator<Player> playerIterator = listPlayer.iterator();
+		while (playerIterator.hasNext()){
+			playerIterator.next().ball.showLabel(show);
+		}
+	}
+	
+	public void setH(int h) {
+		H = h;
+	}
+
+	public void setW(int w) {
+		W = w;
+	}
+
 }

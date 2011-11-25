@@ -1,5 +1,7 @@
 package com.tesserate.jackpot;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 
 import com.tesserate.game.api.fs.ResourceManager;
@@ -13,11 +15,15 @@ public class Ball extends GraphicsObjects {
 	private String resourceId;
 	private int RAIO = 10;
 	private Vector2D velocity = new Vector2D();
-	private GraphicText label = new GraphicText();	
+	private GraphicText label = new GraphicText();
+	private String msgLabel = "";
 	private boolean killBall = false;
 	
 	public Ball(String resourceId) {
 		this.resourceId = resourceId;
+		label.setVisible(false);
+		label.setFont(new Font("helvetica", Font.BOLD, 12));
+		label.setColor(Color.DARK_GRAY);
 	}
 	
 	@Override
@@ -26,7 +32,7 @@ public class Ball extends GraphicsObjects {
 		g.drawImage(ResourceManager.getImageResource(resourceId).getImage(), this.getLocation().x-RAIO, this.getLocation().y-RAIO, null);
 		//g.drawOval( this.getLocation().x-RAIO, this.getLocation().y-RAIO, 2*RAIO,2*RAIO);
 		label.setPosition(this.getLocation().x, this.getLocation().y-10);
-		//label.setMsg(String.format("(%d,%d)", label.getLocation().x, label.getLocation().y));
+		label.setMsg(msgLabel);
 		label.render(g);
 	}
 
@@ -71,4 +77,10 @@ public class Ball extends GraphicsObjects {
 		this.killBall = killBall;
 	}
 
+	public void setLabel(String msg){
+		this.msgLabel = msg;
+	}
+	public void showLabel(boolean show){
+		label.setVisible(show);
+	}
 }

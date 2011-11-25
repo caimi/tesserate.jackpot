@@ -5,6 +5,7 @@ import com.tesserate.game.api.GameCore;
 import com.tesserate.game.api.fs.ImageResource;
 import com.tesserate.game.api.fs.Resource;
 import com.tesserate.game.api.fs.ResourceManager;
+import com.tesserate.game.api.fs.TextFileResource;
 import com.tesserate.game.api.sound.SoundManager;
 import com.tesserate.game.api.ui.FullScreenDevice;
 import com.tesserate.game.api.ui.SceneGraph;
@@ -20,6 +21,9 @@ public class Jackpot extends GameCore{
 		ControllerDevice.getInstance().setKeyListener(arena.keyMapper());
 		SceneGraph.getInstance().add( arena );
 		super.init();
+		arena.setW(FullScreenDevice.getWidth());
+		arena.setH(FullScreenDevice.getHeight());
+		arena.init();
 	}
 
 	@Override
@@ -31,6 +35,11 @@ public class Jackpot extends GameCore{
 	public void loadResources() {
 		loadImageResources();
 		loadAudioResources();
+		loadStringFilesResourcers();
+	}
+
+	private void loadStringFilesResourcers() {
+		addFilePlayers();		
 	}
 
 	private void loadAudioResources() {
@@ -80,6 +89,11 @@ public class Jackpot extends GameCore{
 		addResource("ball_13", "b_verde_e.png");		
 		addResource("ball_14", "b_vermelho_c.png");
 		addResource("ball_15", "b_vermelho_e.png");
+	}
+	
+	private void addFilePlayers(){
+		Resource file = new TextFileResource("players", "./src/main/resources/concorrentes.txt");
+		ResourceManager.addResource(file);
 	}
 
 	private void addResource(final String resourceId, final String resourceFile) {
