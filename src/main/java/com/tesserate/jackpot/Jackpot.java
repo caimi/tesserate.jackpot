@@ -89,6 +89,8 @@ public class Jackpot extends GameCore{
 		addResource("ball_13", "b_verde_e.png");		
 		addResource("ball_14", "b_vermelho_c.png");
 		addResource("ball_15", "b_vermelho_e.png");
+		addResource("explosion", "explosions.png");
+		addResource("spaceship", "spaceships32x32.png");
 	}
 	
 	private void addFilePlayers(){
