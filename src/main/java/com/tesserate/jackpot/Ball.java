@@ -41,8 +41,7 @@ public class Ball extends GraphicsObjects {
 		label.setFont(new Font("Arial", Font.PLAIN, 10));
 		label.setColor(new Color(138,144,149));
 		label.setAlignment(CENTER_ALIGNMENT);
-		sprite = new AnimatedSprite(ResourceManager.getImageResource("explosion"), 16, 16, 1, 64, 64, 0, Util.rnd(0,8)*64);
-		//sprite = new Sprite(ResourceManager.getImageResource("explosion"), 16, 4, 4, 64, 64, 0, 0);
+		sprite = new AnimatedSprite(ResourceManager.getImageResource("explosion"), 16, 16, 1, 64, 64, 0, Util.rnd(0,9)*64);
 	}
 	
 	@Override

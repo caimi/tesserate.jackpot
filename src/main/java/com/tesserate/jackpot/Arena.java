@@ -3,20 +3,29 @@ package com.tesserate.jackpot;
 import static com.tesserate.game.api.sound.SoundManager.play;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+
 import com.tesserate.game.api.GameCore;
 import com.tesserate.game.api.Sprite;
 import com.tesserate.game.api.fs.ResourceManager;
 import com.tesserate.game.api.math.Vector2D;
+import com.tesserate.game.api.ui.FullScreenDevice;
+import com.tesserate.game.api.ui.GraphicButton;
 import com.tesserate.game.api.ui.GraphicText;
 import com.tesserate.game.api.ui.GraphicsObjects;
 import com.tesserate.game.api.ui.SceneGraph;
@@ -43,9 +52,11 @@ public class Arena extends GraphicsObjects {
 	private GraphicText cueBall = new GraphicText();
 	private GraphicText nextBall = new GraphicText();
 	private GraphicText prizes = new GraphicText();
+	private List<GraphicButton> buttons = new ArrayList<GraphicButton>();
+	private MouseAdapter mouseAdapter;
 	
 	private GraphicText screem;
-	private Sprite spaceship;
+	private Sprite ball;
 	private boolean showBallLabels = false;
 	
 	private Arena(){ 
@@ -75,26 +86,113 @@ public class Arena extends GraphicsObjects {
 		screem = new GraphicText(String.format("Resolução %d x %d", W, H), RIGHT-200, HEIGHT - 20 );
 		screem.setColor(Color.DARK_GRAY);
 		initColors();
-		spaceship = new Sprite(ResourceManager.getImageResource("spaceship"), 4, 4, 32, 32, 0, 0);
+		ball = new Sprite(ResourceManager.getImageResource("ball"), 4, 4, 23, 26, 0, 0);
+		
+		Sprite start = new Sprite(ResourceManager.getImageResource("start"), 2, 1, 74, 74, 0, 0);
+		
+		MouseAdapter mouseAdapater = new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				GameCore.pause();
+				((GraphicButton)e.getSource()).onClick();
+			}
+		};
+		GraphicButton btStart = new GraphicButton(start.getFrame(0), start.getFrame(1), mouseAdapater, 575, H-90, 0);
+		buttons.add(btStart);
+		
+		Container contentPane = FullScreenDevice.getInstance().getMainFrame().getContentPane();
+		contentPane.add(btStart);
+		
+		Sprite butttons = new Sprite(ResourceManager.getImageResource("buttons"), 2, 7, 34, 34, 0, 0);
+		
+		mouseAdapater = new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				initPlayerPosition();
+				((GraphicButton)e.getSource()).onClick();
+			}
+		};
+
+		int buttonX=535;
+		GraphicButton bt = new GraphicButton(butttons.getFrame(6), butttons.getFrame(7), mouseAdapater, buttonX, H-70, 0);
+		buttons.add(bt);
+		contentPane.add(bt);
+		
+		mouseAdapater = new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				if(!GameCore.isPaused())
+					GameCore.pause();
+				((GraphicButton)e.getSource()).onClick();
+			}
+		};
+		buttonX = 660;
+		bt = new GraphicButton(butttons.getFrame(0), butttons.getFrame(1), mouseAdapater, buttonX, H-70, 0);
+		buttons.add(bt);
+		contentPane.add(bt);
+		
+		mouseAdapater = new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				if(!GameCore.isPaused())
+					launchKillBall();
+				((GraphicButton)e.getSource()).onClick();
+			}
+		};
+		buttonX+=40;
+		bt = new GraphicButton(butttons.getFrame(2), butttons.getFrame(3), mouseAdapater, buttonX, H-70, 0);
+		buttons.add(bt);
+		contentPane.add(bt);
+		
+		mouseAdapater = new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				showBallLabels = !showBallLabels;
+				showLabel( showBallLabels);
+				((GraphicButton)e.getSource()).onClick();
+			}
+		};
+		buttonX+=40;
+		bt = new GraphicButton(butttons.getFrame(8), butttons.getFrame(9), mouseAdapater, buttonX, H-70, 0);
+		buttons.add(bt);
+		contentPane.add(bt);
+		
+		mouseAdapater = new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				StructJackpot.prizes++;
+				((GraphicButton)e.getSource()).onClick();
+			}
+		};
+		buttonX=500;
+		bt = new GraphicButton(butttons.getFrame(10), butttons.getFrame(11), mouseAdapater, buttonX, H-90, 0);
+		buttons.add(bt);
+		contentPane.add(bt);
+		
+		mouseAdapater = new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				StructJackpot.prizes--;
+				((GraphicButton)e.getSource()).onClick();
+			}
+		};
+
+		bt = new GraphicButton(butttons.getFrame(12), butttons.getFrame(13), mouseAdapater, buttonX, H-50, 0);
+		buttons.add(bt);
+		contentPane.add(bt);
+
 	}
 
 	private void initColors() {
-		colors.add(new Color(225,208,26));
-		colors.add(new Color(255,201,25));
-		colors.add(new Color(151,210,243));
-		colors.add(new Color(27,32,201));
-		colors.add(new Color(31,125,247));
-		colors.add(new Color(44,205,205));
-		colors.add(new Color(47,167,155));
-		colors.add(new Color(242,160,30));
-		colors.add(new Color(110,72,33));
-		colors.add(new Color(229,196,223));
-		colors.add(new Color(228,33,218));
-		colors.add(new Color(140,122,196));
-		colors.add(new Color(27,223,50));
-		colors.add(new Color(33,131,22));
-		colors.add(new Color(226,72,72));
-		colors.add(new Color(140,27,27));
+		colors.add(new Color(229,196,223)); //rosa c
+		colors.add(new Color(228,33,218)); //rosa e
+		colors.add(new Color(226,72,72)); //vermelho c
+		colors.add(new Color(140,27,27)); //vermelho e
+		colors.add(new Color(27,32,201)); //azul e
+		colors.add(new Color(140,122,196)); //roxo
+		colors.add(new Color(31,125,247)); // azul
+		colors.add(new Color(151,210,243)); // azul c
+		colors.add(new Color(255,201,25)); //amarelo e
+		colors.add(new Color(110,72,33)); //marrom
+		colors.add(new Color(242,160,30)); //laranja
+		colors.add(new Color(225,208,26)); //amarelo c
+		colors.add(new Color(33,131,22)); //verde e
+		colors.add(new Color(27,223,50)); //verde c
+		colors.add(new Color(44,205,205)); // ciano c
+		colors.add(new Color(47,167,155)); //ciano e
 	}
 
 	public static Arena getInstance(){
@@ -120,6 +218,15 @@ public class Arena extends GraphicsObjects {
 		prizes.render(g);
 		screem.render(g);
 		renderPlayer(g);
+		
+		for (GraphicButton b : buttons) {
+			b.render(g);
+		} 
+//		Component[] comp = FullScreenDevice.getInstance().getMainFrame().getContentPane().getComponents();
+//		for (Component c : comp) {
+//			Rectangle r = c.getBounds();
+//			g.draw(r);
+//		}
 	}
 
 	private void renderPlayer(Graphics2D g) {
@@ -290,33 +397,6 @@ public class Arena extends GraphicsObjects {
 					//eBall.getPosition().y = BOTTOM;
 				}
 			}
-
-			private void reset() {
-				listPlayer = Collections.synchronizedList(new ArrayList<Player>());
-				StructJackpot.reset();
-				GameCore.setPaused(true);
-			}
-
-			private void initPlayerPosition() {
-				//if(ResourceManager.getTextFiles("players").size() > StructJackpot.players){
-				reset();
-				for(int i = 0; i<ResourceManager.getTextFiles("players").size(); i++){
-					List<String> names = ResourceManager.getTextFiles("players");
-//					String name = names.get(StructJackpot.players%names.size());
-					String name = names.get(i);
-					//BufferedImage image = spaceship.getFrame(StructJackpot.players%spaceship.size());
-					//Ball bw = new Ball(image);
-					Ball bw = new Ball("ball_"+StructJackpot.players%16);
-					bw.setPosition(Util.rnd(LEFT*1d, RIGHT*1d),Util.rnd(TOP*1d, BOTTOM*1d));
-					bw.setVelocity(Util.rnd(-7d, 7d), Util.rnd(-7d, 7d));
-					bw.setLabel(name);
-					Player player = new Player(name, bw, colors.get(listPlayer.size()%16));
-					
-					listPlayer.add(player);
-					++StructJackpot.players;
-					++StructJackpot.remaining;
-				}
-			}
 		};
 	}
 
@@ -327,12 +407,47 @@ public class Arena extends GraphicsObjects {
 		}
 	}
 	
+	private void initPlayerPosition() {
+		//if(ResourceManager.getTextFiles("players").size() > StructJackpot.players){
+		reset();
+		for(int i = 0; i<ResourceManager.getTextFiles("players").size(); i++){
+			List<String> names = ResourceManager.getTextFiles("players");
+//			String name = names.get(StructJackpot.players%names.size());
+			String name = names.get(i);
+			BufferedImage image = ball.getFrame(StructJackpot.players%ball.size());
+			Ball bw = new Ball(image);
+			//Ball bw = new Ball("ball_"+StructJackpot.players%16);
+			bw.setPosition(Util.rnd(LEFT*1d, RIGHT*1d),Util.rnd(TOP*1d, BOTTOM*1d));
+			bw.setVelocity(Util.rnd(-7d, 7d), Util.rnd(-7d, 7d));
+			bw.setLabel(name);
+			Player player = new Player(name, bw, colors.get(listPlayer.size()%16));
+			
+			listPlayer.add(player);
+			++StructJackpot.players;
+			++StructJackpot.remaining;
+		}
+	}
+	
+	private void reset() {
+		listPlayer = Collections.synchronizedList(new ArrayList<Player>());
+		StructJackpot.reset();
+		GameCore.setPaused(true);
+	}
+	
 	public void setH(int h) {
 		H = h;
 	}
 
 	public void setW(int w) {
 		W = w;
+	}
+
+	public MouseAdapter getMouseAdapter() {
+		return mouseAdapter;
+	}
+
+	public void setMouseAdapter(MouseAdapter mouseAdapter) {
+		this.mouseAdapter = mouseAdapter;
 	}
 
 }

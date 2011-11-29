@@ -8,11 +8,13 @@ import com.tesserate.game.api.fs.ResourceManager;
 import com.tesserate.game.api.fs.TextFileResource;
 import com.tesserate.game.api.sound.SoundManager;
 import com.tesserate.game.api.ui.FullScreenDevice;
+import com.tesserate.game.api.ui.NullRepaintManager;
 import com.tesserate.game.api.ui.SceneGraph;
 
 public class Jackpot extends GameCore{
 
 	private Arena arena;
+	private static String file = "";
 
 	@Override
 	public void init() {
@@ -24,6 +26,7 @@ public class Jackpot extends GameCore{
 		arena.setW(FullScreenDevice.getWidth());
 		arena.setH(FullScreenDevice.getHeight());
 		arena.init();
+		NullRepaintManager.install(); //nao sei porque eu coloquei isso no PMT
 	}
 
 	@Override
@@ -73,29 +76,21 @@ public class Jackpot extends GameCore{
 	}
 
 	private void addColoredBallsResource() {
-		addResource("ball_0", "b_amarela_c.png");
-		addResource("ball_1", "b_amarela_e.png");
-		addResource("ball_2", "b_azul_c.png");
-		addResource("ball_3", "b_azul_e.png");
-		addResource("ball_4", "b_azul.png");
-		addResource("ball_5", "b_ciano_c.png");
-		addResource("ball_6", "b_ciano_e.png");
-		addResource("ball_7", "b_laranja.png");		
-		addResource("ball_8", "b_marrom.png");
-		addResource("ball_9", "b_rosa_c.png");		
-		addResource("ball_10", "b_rosa_e.png");
-		addResource("ball_11", "b_roxa.png");		
-		addResource("ball_12", "b_verde_c.png");
-		addResource("ball_13", "b_verde_e.png");		
-		addResource("ball_14", "b_vermelho_c.png");
-		addResource("ball_15", "b_vermelho_e.png");
 		addResource("explosion", "explosions.png");
+		addResource("buttons", "buttons.png");
+		addResource("start", "start.png");
 		addResource("spaceship", "spaceships32x32.png");
+		addResource("ball", "ball.png");
 	}
 	
 	private void addFilePlayers(){
-		Resource file = new TextFileResource("players", "./src/main/resources/concorrentes.txt");
-		ResourceManager.addResource(file);
+		Resource playerFile;
+		if(file == null)
+			playerFile = new TextFileResource("players", "./src/main/resources/concorrentes.txt");
+		else{
+			playerFile = new TextFileResource("players", file);
+		}
+		ResourceManager.addResource(playerFile);
 	}
 
 	private void addResource(final String resourceId, final String resourceFile) {
@@ -107,6 +102,10 @@ public class Jackpot extends GameCore{
 	public static void main(final String[] args) {
 		try{
 			new Jackpot();
+			 for (String s: args) {
+				 if(!s.isEmpty())
+					 file = s;
+			 }
 		}catch (final Exception e) {
 			e.printStackTrace();
 			System.exit(0);
