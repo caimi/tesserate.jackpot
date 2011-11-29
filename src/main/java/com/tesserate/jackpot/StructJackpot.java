@@ -15,7 +15,7 @@ public class StructJackpot {
 		countdown = 0;
 		nextBall = 5;
 		cueBall = 0;
-		prizes = 1;
+		//prizes = 1;
 		players = 0;
 		remaining = 0;
 	}
